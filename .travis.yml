@@ -7,7 +7,7 @@ os:
   - linux
 
 install:
-  - node -v
+  - nvm ls
   - npm install lix@15.0.0-rc.2 -g
   - lix download
 
