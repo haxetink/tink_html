@@ -1,0 +1,15 @@
+{
+  "name": "tink_html",
+  "license": "MIT",
+  "tags": [
+    "tink",
+    "html"
+  ],
+  "classPath": "src",
+  "contributors": [
+    "back2dos"
+  ],
+  "releasenote": "initial release",
+  "version": "0.0.0",
+  "dependencies": {}
+}

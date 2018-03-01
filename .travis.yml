@@ -1,0 +1,18 @@
+sudo: required
+dist: trusty
+
+language: node_js
+os:
+  - linux
+
+install:
+  - node -v
+  - npm install lix@15.0.0-rc.2 -g
+  - lix download
+
+script:
+  - lix run travix interp
+  - lix run travix neko
+  - lix run travix node
+  - lix run travix python
+  - lix run travix java
