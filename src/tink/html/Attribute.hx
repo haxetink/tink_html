@@ -1,7 +1,7 @@
 package tink.html;
 
 abstract Attribute(String) {
-  static public inline var EMPTY = new Attribute(null);
+  static public inline var EMPTY:Attribute = null;
   public inline function new(v:String)
     this = v;
 
