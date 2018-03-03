@@ -11,9 +11,6 @@ typedef Pos = {
 }
 
 class Parser extends ParserBase<Pos, Pair<String, Pos>> {
-  
-  public inline function parseHtml():Array<Node> 
-    return parseChildren();
 
   function parseChildren(?closing:Tag):Array<Node> {
     var ret = [];
@@ -117,6 +114,9 @@ class Parser extends ParserBase<Pos, Pair<String, Pos>> {
       }
     return upto(end).sure();
   }
+
+  static public function parse(html)
+    return new Parser(html).parseChildren();
 
   static var IDENT_START = UPPER || LOWER || '_'.code;
   static var IDENT_CONTD = IDENT_START || DIGIT || '-'.code || '.'.code;

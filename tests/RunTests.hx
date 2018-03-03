@@ -1,15 +1,13 @@
 package ;
 
 import tink.html.*;
+import tink.html.Parser.parse in html;
 import haxe.unit.*;
 import deepequal.DeepEqual;
-import tink.html.Node;
+using tink.html.Node;
 using tink.CoreApi;
 
 class RunTests extends TestCase {
-  function tags() {
-    
-  }
   function assertDeepEqual<A>(a:A, b:A, ?pos:haxe.PosInfos) {
     switch DeepEqual.compare(a, b, pos) {
       case Failure(e):
@@ -21,10 +19,23 @@ class RunTests extends TestCase {
         assertTrue(true);
     }
   }
+
+  function testIterator() {
+    var found = [
+      for (n in html('<div><h1>A list:</h1><ul><li>First</li><li>Second</li><li>Last, but not <strong>Least</strong></li></ul></div>')[0].traverse()) {
+        switch n {
+          case Tag(name, _, _): '<$name>';
+          case Text(s): '"$s"';
+          case Comment(s): '//$s';
+        }
+      }
+    ];
+    assertEquals('<div>,<h1>,<ul>,"A list:",<li>,<li>,<li>,"First","Second","Last, but not ",<strong>,"Least"', found.join(','));
+  }
   function testParser() {
     assertDeepEqual(
       [Text('wurst'), Comment(' foo '), Tag('div', [new Named<Attribute>('contenteditable', Attribute.EMPTY)], [Tag('img', [new Named<Attribute>('src', 'example.png')], null)])], 
-      new Parser('wurst<!-- foo --><diV contenteditable><iMg src  = "example.png" ></Div>').parseHtml()
+      html('wurst<!-- foo --><diV contenteditable><iMg src  = "example.png" ></Div>')
     );
   }
 
