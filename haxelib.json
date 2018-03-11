@@ -12,6 +12,7 @@
   "releasenote": "initial release",
   "version": "0.0.0",
   "dependencies": {
-    "tink_parse": ""
+    "tink_parse": "",
+    "tink_stringly": ""
   }
 }

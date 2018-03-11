@@ -12,7 +12,7 @@ typedef Pos = {
 
 class Parser extends ParserBase<Pos, Pair<String, Pos>> {
 
-  function parseChildren(?closing:Tag):Array<Node> {
+  function parseChildren(?closing:TagName):Array<Node> {
     var ret = [];
 
     function text(s:StringSlice)
@@ -30,7 +30,7 @@ class Parser extends ParserBase<Pos, Pair<String, Pos>> {
             if (closing == null) die('unexpected </');
             else {
               var found = ident().sure() + wi(expect.bind('>'));
-              if ((found.toString():Tag) == closing) {
+              if ((found.toString():TagName) == closing) {
                 closing = null;
                 break;
               }
@@ -63,7 +63,7 @@ class Parser extends ParserBase<Pos, Pair<String, Pos>> {
   function open() {
     var raw = ident(true).sure(),
         attr = [];
-    var tag:Tag = (raw:String);
+    var tag:TagName = (raw:String);
     var selfClosing = wi(function () {
       while (pos < max) {
         switch ident() {

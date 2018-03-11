@@ -39,6 +39,10 @@ class RunTests extends TestCase {
     );
   }
 
+  function testHxx() {
+    tink.html.Tags.hxx('<div>Test</div>');
+  }
+
   function testPrinter() {
     inline function expect(s:String, n, ?pos:haxe.PosInfos)
       assertEquals(s, Printer.print(n), pos);

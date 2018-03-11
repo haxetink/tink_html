@@ -1,7 +1,7 @@
 package tink.html;
 
 enum Node {
-  Tag(name:Tag, attributes:Array<Named<Attribute>>, children:Array<Node>);
+  Tag(name:TagName, attributes:Array<Named<Attribute>>, children:Array<Node>);
   Text(value:Fragment);
   Comment(value:Fragment);
 }
