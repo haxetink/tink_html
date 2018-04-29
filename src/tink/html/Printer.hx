@@ -8,7 +8,7 @@ class Printer {
       case Tag(name, attrs, c): 
         var tag = '<$name';
         for (a in attrs)
-          tag += a.name + switch a.value {
+          tag += ' '+a.name + switch a.value {
             case Attribute.EMPTY: '';
             case v: '="$v"';
           }
