@@ -39,6 +39,7 @@ class NodeIterator {
     return todo.length > 0;
   
   public function next() {
+    //TODO: the below operations are not particularly memory efficient outside the JS target
     var next = todo.shift();
     switch next {
       case Tag(_, _, c) if (c != null): todo = todo.concat(c);

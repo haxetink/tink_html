@@ -1,0 +1,3 @@
+# @install: lix --silent download "https://github.com/haxetink/tink_domspec/archive/ac1a0c1f666a7f3aad7b60acf76e7028289af406.tar.gz" into tink_domspec/0.0.0/github/ac1a0c1f666a7f3aad7b60acf76e7028289af406
+-D tink_domspec=0.0.0
+-cp ${HAXESHIM_LIBCACHE}/tink_domspec/0.0.0/github/ac1a0c1f666a7f3aad7b60acf76e7028289af406/src

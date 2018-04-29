@@ -2,3 +2,5 @@
 -main RunTests
 -dce full
 -lib deep_equal
+-lib tink_domspec
+-lib tink_hxx

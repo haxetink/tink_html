@@ -1,74 +1,121 @@
 package tink.html;
 
+using tink.CoreApi;
+
+#if macro
+import haxe.macro.Expr;
+import haxe.macro.Type;
+import haxe.macro.Context;
+#if tink_hxx
+using tink.MacroApi;
+import tink.hxx.*;
+#end
+#else
+@:build(tink.html.Tags.build())
+#end
 class Tags {
-  static function h(name, attributes:haxe.DynamicAccess<tink.Stringly>, ?children:Array<Child>) {
+  #if !macro
+  static function h(name, attributes:haxe.DynamicAccess<tink.Stringly>, ?children:Children) 
     return Node.Tag(
       name, 
       [for (name in attributes.keys()) new Named(name, ((attributes[name]:String):Attribute))],
       children
     );
+  #else
+    #if (tink_domspec && tink_hxx)
+  
+    static var tags = {
+      var ret = {
+        opaque: new Array<ClassField>(),
+        void: new Array<ClassField>(),
+        normal: new Array<ClassField>(),
+      };
+
+      for (g in Context.getType('tink.domspec.Tags').getFields().sure()) {
+        var kind = switch g.name {
+          case 'normal': ret.normal;
+          case 'opaque': ret.opaque;
+          case 'void': ret.void;
+          default: continue;
+        }
+        
+        for (t in g.type.getFields().sure()) 
+          kind.push(t);
+        
+      }
+
+      ret;
+    };
+    #end
+
+  static function build() {
+    #if !(tink_domspec && tink_hxx)
+      return Context.fatalError('using tink.html.Tags requires -lib tink_domspec and -lib tink_hxx', Context.currentPos());
+    #else  
+    var fields = Context.getBuildFields();
+
+    function add(f:ClassField, ?children:ComplexType)
+      fields.push({
+        name: f.name,
+        pos: f.pos,
+        access: [AStatic, APublic],
+        kind: FFun({
+          ret: macro : tink.html.Node,
+          args: 
+            [{ name: 'attr', type: f.type.toComplex(), opt: false }].concat(
+              if (children == null) []
+              else [{ name: 'children', type: children, opt: true }]
+            ),
+          expr: 
+            if (children == null)
+              macro return h($v{f.name}, cast attr)
+            else
+              macro return h($v{f.name}, cast attr, children),
+        }),
+      });    
+
+    var children = macro : Array<tink.html.Tags.Child>;
+    for (f in tags.normal)
+      add(f, children); 
+
+    for (f in tags.void)
+      add(f); 
+
+    for (f in tags.opaque)
+      add(f, macro : tink.html.Fragment);
+    
+    return fields;
+    #end
   }
-
-  static public function html(attrs:BaseAttr, children)
-    return h('html', cast attrs, children);
-
-  static public function body(attrs:BaseAttr, children)
-    return h('body', cast attrs, children);
-
-  static public function head(attrs:BaseAttr, children)
-    return h('head', cast attrs, children);
-
-  static public function header(attrs:BaseAttr, children)
-    return h('header', cast attrs, children);
-
-  static public function footer(attrs:BaseAttr, children)
-    return h('footer', cast attrs, children);
-
-  static public function div(attrs:BaseAttr, children)
-    return h('div', cast attrs, children);
-
-  static public function h1(attrs:BaseAttr, children)
-    return h('h1', cast attrs, children);
-
-  static public function h2(attrs:BaseAttr, children)
-    return h('h2', cast attrs, children);
-
-  static public function h3(attrs:BaseAttr, children)
-    return h('h3', cast attrs, children);
-
-  static public function h4(attrs:BaseAttr, children)
-    return h('h4', cast attrs, children);
-
-  static public function h5(attrs:BaseAttr, children)
-    return h('h5', cast attrs, children);
-
-  static public function h6(attrs:BaseAttr, children)
-    return h('h6', cast attrs, children);
-
-  macro static public function hxx(e) {
-    return new Generator().root(tink.hxx.Parser.parseRoot(e));
+  #end
+  macro static public function hxx(e:Expr) {
+    #if !(tink_hxx && tink_domspec)
+      return Context.fatalError('must compile with -lib tink_hxx and -lib tink_domspec to enable HXX support', Context.currentPos());
+    #else
+      var p = tink.hxx.Parser.parseRoot(e, {
+        defaultExtension: 'hxx',
+        isVoid: [for (f in tags.void) f.name => true].get
+      });
+      return new Generator(Generator.extractTags(macro tink.html.Tags)).root(p);
+    #end
   }
 }
 
-typedef BaseAttr = {
-  @:optional var className(default, never):String;
+#if !macro
+abstract Children(Array<Node>) from Array<Child> to Array<Node> {
+
+  @:from static function ofString(s:String):Children 
+    return [(s:Child)];
+
+  @:from static function ofFragment(f:Fragment):Children 
+    return [(f:Child)];
 }
 
 abstract Child(Node) from Node to Node {
-  @:from static inline function ofString(s:String)
+  @:from static inline function ofString(s:String):Child
     return ofFragment(s);
 
-  @:from static inline function ofFragment(fragment:Fragment)
+  @:from static inline function ofFragment(fragment:Fragment):Child
     return Node.Text(fragment);
-}
-
-#if macro
-class Generator extends tink.hxx.Generator {
-  public function new() {
-    super([function (s) return {
-      pos: s.pos,
-      value: 'tink.html.Tags.${s.value}',
-    }]);
-  }
 }
 #end

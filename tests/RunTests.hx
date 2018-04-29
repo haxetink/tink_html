@@ -40,7 +40,8 @@ class RunTests extends TestCase {
   }
 
   function testHxx() {
-    tink.html.Tags.hxx('<div>Test</div>');
+    tink.html.Tags.hxx('<div><a href="http://example.com">Test</a></div>');
+    assertTrue(true);
   }
 
   function testPrinter() {

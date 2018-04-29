@@ -1,4 +1,3 @@
 -cp src
 -lib tink_parse
--lib tink_hxx
 -lib tink_stringly
