@@ -1,18 +1,18 @@
 {
-  "name": "tink_html",
-  "license": "MIT",
-  "tags": [
-    "tink",
-    "html"
-  ],
-  "classPath": "src",
-  "contributors": [
-    "back2dos"
-  ],
-  "releasenote": "initial release",
-  "version": "0.0.0",
-  "dependencies": {
-    "tink_parse": "",
-    "tink_stringly": ""
-  }
+	"name": "tink_html",
+	"license": "MIT",
+	"tags": [
+		"tink",
+		"html"
+	],
+	"classPath": "src",
+	"contributors": [
+		"back2dos"
+	],
+	"releasenote": "Initial haxelib release.",
+	"version": "0.1.0",
+	"dependencies": {
+		"tink_parse": "",
+		"tink_stringly": ""
+	}
 }
