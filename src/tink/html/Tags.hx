@@ -3,15 +3,18 @@ package tink.html;
 using tink.CoreApi;
 
 #if macro
-import haxe.macro.Expr;
-import haxe.macro.Type;
-import haxe.macro.Context;
-#if tink_hxx
-using tink.MacroApi;
-import tink.hxx.*;
-#end
+  import haxe.macro.Expr;
+  import haxe.macro.Type;
+  import haxe.macro.Context;
+  #if tink_hxx
+    using tink.MacroApi;
+    import tink.hxx.*;
+  #end
+  #if tink_domspec
+    import tink.domspec.Macro.tags;
+  #end
 #else
-@:build(tink.html.Tags.build())
+  @:build(tink.html.Tags.build())
 #end
 class Tags {
   #if !macro
@@ -22,30 +25,14 @@ class Tags {
       children
     );
   #else
-    #if (tink_domspec && tink_hxx)
-  
-    static var tags = {
-      var ret = {
-        opaque: new Array<ClassField>(),
-        void: new Array<ClassField>(),
-        normal: new Array<ClassField>(),
-      };
-
-      for (g in Context.getType('tink.domspec.Tags').getFields().sure()) {
-        var kind = switch g.name {
-          case 'normal': ret.normal;
-          case 'opaque': ret.opaque;
-          case 'void': ret.void;
-          default: continue;
-        }
-        
-        for (t in g.type.getFields().sure()) 
-          kind.push(t);
-        
-      }
-
-      ret;
-    };
+    #if tink_hxx
+    static public var generator = new tink.hxx.Generator(
+      #if tink_domspec
+        Tag.extractAllFrom(macro tink.html.Tags)
+      #else
+        []
+      #end
+    );
     #end
 
   static function build() {
@@ -54,35 +41,35 @@ class Tags {
     #else  
     var fields = Context.getBuildFields();
 
-    function add(f:ClassField, ?children:ComplexType)
+    var children = macro : Array<tink.html.Tags.Child>;
+
+    for (name in tags.keys()) {
+      var tag = tags[name];
       fields.push({
-        name: f.name,
-        pos: f.pos,
+        name: name,
+        pos: tag.pos,
         access: [AStatic, APublic],
         kind: FFun({
           ret: macro : tink.html.Node,
           args: 
-            [{ name: 'attr', type: f.type.toComplex(), opt: false }].concat(
+            [{ name: 'attr', type: tag.attr, opt: false }].concat(
               if (children == null) []
               else [{ name: 'children', type: children, opt: true }]
             ),
-          expr: 
+          expr: {
+            var children = switch tag.kind {
+              case NORMAL: children;
+              case OPAQUE: macro : tink.html.Fragment;
+              case VOID: null;
+            }
             if (children == null)
-              macro return h($v{f.name}, cast attr)
+              macro return h($v{name}, cast attr)
             else
-              macro return h($v{f.name}, cast attr, children),
+              macro return h($v{name}, cast attr, children);
+          },
         }),
       });    
-
-    var children = macro : Array<tink.html.Tags.Child>;
-    for (f in tags.normal)
-      add(f, children); 
-
-    for (f in tags.void)
-      add(f); 
-
-    for (f in tags.opaque)
-      add(f, macro : tink.html.Fragment);
+    }
     
     return fields;
     #end
@@ -92,11 +79,18 @@ class Tags {
     #if !(tink_hxx && tink_domspec)
       return Context.fatalError('must compile with -lib tink_hxx and -lib tink_domspec to enable HXX support', Context.currentPos());
     #else
-      var p = tink.hxx.Parser.parseRoot(e, {
-        defaultExtension: 'hxx',
-        isVoid: [for (f in tags.void) f.name => true].get
-      });
-      return new Generator(Generator.extractTags(macro tink.html.Tags)).root(p);
+
+      var ctx = generator.createContext();
+      return ctx.generateRoot(
+        tink.hxx.Parser.parseRoot(e, { 
+          defaultExtension: 'hxx', 
+          noControlStructures: false, 
+          defaultSwitchTarget: macro __data__,
+          isVoid: ctx.isVoid,
+          fragment: Context.definedValue('hxx_fragment'),
+          treatNested: function (children) return ctx.generateRoot.bind(children).bounce(),
+        })
+      );
     #end
   }
 }

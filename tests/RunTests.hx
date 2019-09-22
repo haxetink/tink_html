@@ -1,7 +1,6 @@
 package ;
 
 import tink.html.*;
-import tink.html.Parser.parse in html;
 import haxe.unit.*;
 import deepequal.DeepEqual;
 using tink.html.Node;
@@ -19,6 +18,9 @@ class RunTests extends TestCase {
         assertTrue(true);
     }
   }
+
+  function html(s) 
+    return tink.html.Parser.parse(s, tink.parse.Reporter.expr('test'));
 
   function testIterator() {
     var found = [

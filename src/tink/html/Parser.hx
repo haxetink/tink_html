@@ -5,12 +5,7 @@ import tink.parse.Char.*;
 import tink.parse.ParserBase;
 import tink.parse.StringSlice;
 
-typedef Pos = {
-  var min(default, never):Int;
-  var max(default, never):Int;
-}
-
-class Parser extends ParserBase<Pos, Pair<String, Pos>> {
+class Parser<Pos, Error> extends ParserBase<Pos, Error> {
 
   function parseChildren(?closing:TagName):Array<Node> {
     var ret = [];
@@ -94,12 +89,6 @@ class Parser extends ParserBase<Pos, Pair<String, Pos>> {
     );
   }
 
-  override function makeError(message:String, pos:Pos) 
-    return new Pair(message, pos);
-
-  override function doMakePos(from:Int, to:Int):Pos
-    return { min: from, max: to };
-
   function skipWhite():Continue {
     doReadWhile(WHITE);
     return null;
@@ -115,8 +104,8 @@ class Parser extends ParserBase<Pos, Pair<String, Pos>> {
     return upto(end).sure();
   }
 
-  static public function parse(html)
-    return new Parser(html).parseChildren();
+  static public function parse(html, reporter)
+    return new Parser(html, reporter).parseChildren();
 
   static var IDENT_START = UPPER || LOWER || '_'.code;
   static var IDENT_CONTD = IDENT_START || DIGIT || '-'.code || '.'.code;
